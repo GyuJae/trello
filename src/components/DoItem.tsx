@@ -2,7 +2,7 @@ import { motion, Variants } from "framer-motion";
 import React, { useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import styled from "styled-components";
-import { getDetailRoom } from "../firebase";
+import { getDetailRoom, updateRoomTodos } from "../firebase";
 import IRoom from "../types/room.type";
 
 interface IDoItem {
@@ -118,7 +118,29 @@ const DoItem: React.FC<IDoItem> = ({ category, roomName }) => {
     };
     getData();
   }, [roomName]);
-  const onSubmit: SubmitHandler<IForm> = ({ doText }) => {
+  const onSubmit: SubmitHandler<IForm> = async ({ doText }) => {
+    await updateRoomTodos({
+      roomName,
+      category,
+      newDoText: doText,
+    });
+    setRoomData((originRoom) => ({
+      ...(originRoom as IRoom),
+      dos: {
+        Doing: [
+          ...(originRoom?.dos.Doing as string[]),
+          category === "Doing" ? doText : "",
+        ],
+        Done: [
+          ...(originRoom?.dos.Done as string[]),
+          category === "Done" ? doText : "",
+        ],
+        "To Do": [
+          ...(originRoom?.dos["To Do"] as string[]),
+          category === "To Do" ? doText : "",
+        ],
+      },
+    }));
     setValue("doText", "");
   };
 
